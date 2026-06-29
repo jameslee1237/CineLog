@@ -1,6 +1,7 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { WebVitals } from '@/components/ui/WebVitals';
 import './globals.css';
 
 const geistSans = Geist({
@@ -18,18 +19,25 @@ export const metadata: Metadata = {
   description: 'Track, rate, and discover films',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+interface IRootLayoutProps {
   children: React.ReactNode;
-}>) {
+}
+
+export default function RootLayout({ children }: Readonly<IRootLayoutProps>) {
   return (
     <ClerkProvider>
       <html
         lang="en"
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-        <body className="min-h-full flex flex-col">{children}</body>
+        <head>
+          {/* TMDB 이미지 서버에 대한 DNS + TCP + TLS를 미리 맺어 LCP를 단축 */}
+          <link rel="preconnect" href="https://image.tmdb.org" />
+        </head>
+        <body className="min-h-full flex flex-col">
+          {children}
+          <WebVitals />
+        </body>
       </html>
     </ClerkProvider>
   );
