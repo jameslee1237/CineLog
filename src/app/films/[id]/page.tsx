@@ -1,4 +1,15 @@
-import { getBackdropUrl, getMovieCredits, getMovieDetail, getPosterUrl, type ITmdbCastMember, type ITmdbMovieDetail } from '@/lib/tmdb';
+import {
+  getBackdropUrl,
+  getMovieCredits,
+  getMovieDetail,
+  getPosterUrl,
+  type ITmdbCastMember,
+  type ITmdbMovieDetail,
+} from '@/lib/tmdb';
+import { getWatchedStatus, getRating } from '@/lib/db/queries';
+import { WatchedButton } from '@/components/film/WatchedButton';
+import { RatingWidget } from '@/components/film/RatingWidget';
+import { auth } from '@clerk/nextjs/server';
 import { Suspense } from 'react';
 import Image from 'next/image';
 import type { Metadata } from 'next';
@@ -32,11 +43,19 @@ export default async function FilmPage({ params }: IFilmPageProps) {
 
 // 실제 데이터 fetch를 별도 async 컴포넌트로 분리 — Suspense boundary가 이 경계를 기준으로 동작
 async function FilmDetail({ movieId }: { movieId: number }) {
-  // Promise.all로 두 요청 병렬 실행 — 순차 await 대비 ~50% 빠름
+  // TMDB 데이터 + 인증 정보를 병렬로 fetch
+  const { userId } = await auth();
+
+  // Promise.all로 두 TMDB 요청 병렬 실행 — 순차 await 대비 ~50% 빠름
   const [movie, credits] = await Promise.all([
     getMovieDetail(movieId),
     getMovieCredits(movieId),
   ]);
+
+  // 로그인 상태일 때만 DB 조회
+  const [isWatched, rating] = userId
+    ? await Promise.all([getWatchedStatus(userId, movieId), getRating(userId, movieId)])
+    : [false, null];
 
   const posterUrl = getPosterUrl(movie.poster_path, 'w500');
   const backdropUrl = getBackdropUrl(movie.backdrop_path);
@@ -62,6 +81,15 @@ async function FilmDetail({ movieId }: { movieId: number }) {
           )}
           <FilmMeta movie={movie} />
         </div>
+
+        {/* 사용자 인터랙션 영역 — 로그인 상태일 때만 표시 */}
+        {userId && (
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <WatchedButton tmdbId={movieId} initialWatched={isWatched} />
+            <RatingWidget tmdbId={movieId} initialRating={rating} />
+          </div>
+        )}
+
         <CastSection cast={topCast} />
       </div>
     </>

@@ -7,15 +7,22 @@ interface IFilmCardProps {
   movie: ITmdbMovie;
   priority?: boolean;
   blurDataURL?: string;
+  isWatched?: boolean;
 }
 
-export const FilmCard = ({ movie, priority = false, blurDataURL = FALLBACK_BLUR }: IFilmCardProps) => {
+export const FilmCard = ({ movie, priority = false, blurDataURL = FALLBACK_BLUR, isWatched = false }: IFilmCardProps) => {
   const posterUrl = getPosterUrl(movie.poster_path, 'w342');
 
   return (
     <Link href={`/films/${movie.id}`} className="group block">
       {/* aspect-ratio 컨테이너 — 이미지 로드 전 공간을 확보해서 CLS(레이아웃 이동) 방지 */}
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-gray-800">
+        {/* 시청 완료 체크 배지 — JS 없이 CSS only */}
+        {isWatched && (
+          <div className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white text-xs font-bold shadow">
+            ✓
+          </div>
+        )}
         {posterUrl ? (
           <Image
             src={posterUrl}

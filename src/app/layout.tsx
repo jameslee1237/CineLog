@@ -2,6 +2,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { WebVitals } from '@/components/ui/WebVitals';
+import { Navbar } from '@/components/ui/Navbar';
 import './globals.css';
 
 const geistSans = Geist({
@@ -35,7 +36,8 @@ export default function RootLayout({ children }: Readonly<IRootLayoutProps>) {
           <link rel="preconnect" href="https://image.tmdb.org" />
         </head>
         <body className="min-h-full flex flex-col">
-          {children}
+          <Navbar />
+          <div className="flex-1">{children}</div>
           <WebVitals />
         </body>
       </html>
