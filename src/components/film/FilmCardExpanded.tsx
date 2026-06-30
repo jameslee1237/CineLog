@@ -104,21 +104,14 @@ export const FilmCardExpanded = ({ movie, blurDataURL = FALLBACK_BLUR, onClose }
                 </p>
               )}
 
-              <div className="mt-4 flex items-center gap-3">
+              <div className="mt-4">
                 <Link
                   href={`/films/${movie.id}`}
-                  className="flex-1 text-center py-2 rounded-lg bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors"
+                  className="block w-full text-center py-2 rounded-lg bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors"
                   onClick={onClose}
                 >
                   상세 보기 →
                 </Link>
-                <button
-                  onClick={onClose}
-                  className="p-2 rounded-lg bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
-                  aria-label="닫기"
-                >
-                  ✕
-                </button>
               </div>
             </motion.div>
           </motion.div>
