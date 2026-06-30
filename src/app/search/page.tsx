@@ -9,7 +9,7 @@ interface ISearchPageProps {
 export async function generateMetadata({ searchParams }: ISearchPageProps): Promise<Metadata> {
   const { q } = await searchParams;
   return {
-    title: q ? `"${q}" 검색 결과 — CineLog` : '영화 검색 — CineLog',
+    title: q ? `"${q}" — CineLog` : 'Search — CineLog',
   };
 }
 
@@ -21,10 +21,10 @@ export default async function SearchPage({ searchParams }: ISearchPageProps) {
     <main className="max-w-5xl mx-auto px-4 py-8">
       {query ? (
         <h1 className="mb-6 text-xl font-semibold text-gray-300">
-          &ldquo;{query}&rdquo; 검색 결과
+          Results for &ldquo;{query}&rdquo;
         </h1>
       ) : (
-        <h1 className="mb-6 text-xl font-semibold text-gray-300">영화 검색</h1>
+        <h1 className="mb-6 text-xl font-semibold text-gray-300">Search Films</h1>
       )}
 
       {/*

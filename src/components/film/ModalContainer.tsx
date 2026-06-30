@@ -39,14 +39,21 @@ export const ModalContainer = ({
   };
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();
+    // 의존성 배열 [] — 마운트 시 1회만 실행. 배열 없으면 애니메이션 렌더마다 실행되어
+    // overflow 가 '' → 'hidden' 사이클을 반복하며 스크롤바가 깜빡임
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsVisible(false);
+        setTimeout(() => router.back(), 240);
+      }
+    };
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
     };
-  });
+  }, [router]);
 
   const heroUrl = backdropUrl ?? posterUrl;
 
@@ -75,9 +82,9 @@ export const ModalContainer = ({
             exit={{ opacity: 0, scale: 0.96, y: 16 }}
             transition={{ duration: 0.24, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            {/* 히어로 이미지 — 백드롭 우선, 없으면 포스터 */}
+            {/* 히어로 이미지 — aspect-[2/1]로 높이 제한, 하단 그라디언트로 배경색과 자연스럽게 연결 */}
             {heroUrl && (
-              <div className="relative w-full aspect-video overflow-hidden rounded-t-2xl">
+              <div className="relative w-full aspect-[2/1] overflow-hidden rounded-t-2xl shrink-0">
                 <Image
                   src={heroUrl}
                   alt={title}
@@ -87,15 +94,14 @@ export const ModalContainer = ({
                   blurDataURL={blurDataURL}
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent" />
               </div>
             )}
 
-            {/* 콘텐츠 */}
+            {/* 콘텐츠 — 이미지와 겹치지 않게 일반 흐름으로 배치 */}
             <motion.div
               className="p-5"
-              style={{ marginTop: heroUrl ? '-2rem' : 0 }}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: 0.1 }}
             >
@@ -114,7 +120,7 @@ export const ModalContainer = ({
                   href={`/films/${movieId}`}
                   className="block w-full text-center py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors"
                 >
-                  상세 보기 →
+                  View details →
                 </Link>
               </div>
             </motion.div>

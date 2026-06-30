@@ -28,14 +28,14 @@ export const Navbar = async () => {
           {userId ? (
             <>
               <Link href="/profile" className="text-sm text-gray-300 hover:text-white transition-colors">
-                내 목록
+                My List
               </Link>
               <UserButton />
             </>
           ) : (
             <SignInButton mode="modal">
               <button className="rounded-full bg-gray-700 px-4 py-1.5 text-sm font-medium hover:bg-gray-600 transition-colors">
-                로그인
+                Sign In
               </button>
             </SignInButton>
           )}

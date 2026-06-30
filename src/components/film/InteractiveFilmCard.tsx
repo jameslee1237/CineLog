@@ -138,7 +138,7 @@ export const InteractiveFilmCard = ({
             animate={{ opacity: 1 }}
             className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent flex items-end p-2 pointer-events-none"
           >
-            <span className="text-xs text-white/80">클릭해서 펼치기 ↗</span>
+            <span className="text-xs text-white/80">Click to expand ↗</span>
           </motion.div>
         )}
       </motion.div>

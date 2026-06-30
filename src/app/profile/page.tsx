@@ -7,7 +7,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '내 목록 — CineLog',
+  title: 'My List — CineLog',
 };
 
 export default async function ProfilePage() {
@@ -16,7 +16,7 @@ export default async function ProfilePage() {
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">내 시청 목록</h1>
+      <h1 className="text-2xl font-bold mb-6">My Watched List</h1>
       <Suspense fallback={<WatchedListSkeleton />}>
         <WatchedList userId={userId} />
       </Suspense>
@@ -30,7 +30,7 @@ async function WatchedList({ userId }: { userId: string }) {
   if (entries.length === 0) {
     return (
       <p className="text-gray-400 text-sm">
-        아직 시청한 영화가 없습니다. 영화를 찾아 시청 목록에 추가해보세요.
+        No films watched yet. Find a film and add it to your list.
       </p>
     );
   }
