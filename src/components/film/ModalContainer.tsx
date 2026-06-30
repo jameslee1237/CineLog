@@ -2,7 +2,6 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FALLBACK_BLUR } from '@/lib/blur';
@@ -116,12 +115,14 @@ export const ModalContainer = ({
               )}
 
               <div className="mt-5">
-                <Link
+                {/* <Link> 는 소프트 네비게이션이라 인터셉트 라우트에 다시 잡힘.
+                    <a> 로 하드 네비게이션해야 실제 /films/[id] 페이지로 이동 */}
+                <a
                   href={`/films/${movieId}`}
                   className="block w-full text-center py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors"
                 >
                   View details →
-                </Link>
+                </a>
               </div>
             </motion.div>
           </motion.div>
