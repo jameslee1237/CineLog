@@ -46,7 +46,7 @@ CineLog는 트렌딩 영화 탐색, 검색, 상세 보기, 시청 표시, 별점
 | 3 | User tracking — Server Actions, watched list, ratings, `useOptimistic` | ✅ Done |
 | 4 | Search + INP — debounce, `useTransition`, RSC search page | ✅ Done |
 | 5 | Animations — Framer Motion, View Transitions API, reduced-motion | ✅ Done |
-| 6 | Advanced streaming — PPR, `proxy.ts`, parallel routes | ⏳ Planned |
+| 6 | Advanced streaming — `proxy.ts`, parallel routes + intercepting modal (`@modal` slot) | ✅ Done |
 | 7 | Perf audit — Lighthouse CI, bundle analysis, `docs/perf-baseline.md` | ⏳ Planned |
 
 ---
