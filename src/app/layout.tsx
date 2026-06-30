@@ -1,5 +1,6 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { WebVitals } from '@/components/ui/WebVitals';
 import { Navbar } from '@/components/ui/Navbar';
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 interface IRootLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function RootLayout({ children }: Readonly<IRootLayoutProps>) {
