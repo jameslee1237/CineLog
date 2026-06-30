@@ -75,7 +75,7 @@ export const ModalContainer = ({
           {/* 모달 카드 */}
           <motion.div
             key="modal-card"
-            className="fixed z-50 left-1/2 top-1/2 w-[min(440px,92vw)] max-h-[88vh] overflow-y-auto rounded-2xl bg-gray-900 shadow-2xl"
+            className="fixed z-50 left-1/2 top-1/2 w-[min(440px,92vw)] rounded-2xl bg-gray-900 shadow-2xl overflow-hidden"
             style={{ translateX: '-50%', translateY: '-50%' }}
             initial={{ opacity: 0, scale: 0.94, y: 24 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}

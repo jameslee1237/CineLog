@@ -75,7 +75,7 @@ export const NavbarSearch = () => {
     return (
       <button
         onClick={expand}
-        aria-label="검색"
+        aria-label="Search"
         className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
       >
         <SearchIcon />
@@ -96,10 +96,10 @@ export const NavbarSearch = () => {
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
-          placeholder="영화 제목 검색..."
+          placeholder="Search films..."
           autoFocus
           className="w-full rounded-lg bg-gray-800 py-1.5 pl-9 pr-3 text-sm outline-none ring-1 ring-emerald-500 transition-shadow focus:ring-2"
-          aria-label="영화 검색"
+          aria-label="Search films"
         />
         {isPending && (
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 animate-pulse">
@@ -111,7 +111,7 @@ export const NavbarSearch = () => {
       {!isOnSearchPage && (
         <button
           onClick={collapse}
-          aria-label="검색 닫기"
+          aria-label="Close search"
           className="text-gray-400 hover:text-white transition-colors text-lg leading-none"
         >
           ×
