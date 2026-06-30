@@ -6,6 +6,11 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // View Transitions API — Next.js가 <Link> 탐색을 document.startViewTransition()으로 래핑해
+    // view-transition-name이 붙은 요소가 브라우저 네이티브 모핑 애니메이션을 발동함
+    viewTransition: true,
+  },
   turbopack: {
     root: __dirname,
   },

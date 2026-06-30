@@ -15,8 +15,14 @@ export const FilmCard = ({ movie, priority = false, blurDataURL = FALLBACK_BLUR,
 
   return (
     <Link href={`/films/${movie.id}`} className="group block">
-      {/* aspect-ratio 컨테이너 — 이미지 로드 전 공간을 확보해서 CLS(레이아웃 이동) 방지 */}
-      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-gray-800">
+      {/*
+        view-transition-name: 영화 카드 → 상세 페이지 이동 시 포스터가 모핑되는 View Transitions 앵커.
+        각 영화마다 고유한 이름이어야 하므로 movie.id를 포함한다.
+      */}
+      <div
+        className="relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-gray-800"
+        style={{ viewTransitionName: `poster-${movie.id}` }}
+      >
         {/* 시청 완료 체크 배지 — JS 없이 CSS only */}
         {isWatched && (
           <div className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white text-xs font-bold shadow">

@@ -9,6 +9,7 @@ import {
 import { getWatchedStatus, getRating } from '@/lib/db/queries';
 import { WatchedButton } from '@/components/film/WatchedButton';
 import { RatingWidget } from '@/components/film/RatingWidget';
+import { motion } from '@/components/ui/MotionDiv';
 import { auth } from '@clerk/nextjs/server';
 import { Suspense } from 'react';
 import Image from 'next/image';
@@ -43,10 +44,9 @@ export default async function FilmPage({ params }: IFilmPageProps) {
 
 // 실제 데이터 fetch를 별도 async 컴포넌트로 분리 — Suspense boundary가 이 경계를 기준으로 동작
 async function FilmDetail({ movieId }: { movieId: number }) {
-  // TMDB 데이터 + 인증 정보를 병렬로 fetch
   const { userId } = await auth();
 
-  // Promise.all로 두 TMDB 요청 병렬 실행 — 순차 await 대비 ~50% 빠름
+  // TMDB 데이터 병렬 fetch
   const [movie, credits] = await Promise.all([
     getMovieDetail(movieId),
     getMovieCredits(movieId),
@@ -74,23 +74,50 @@ async function FilmDetail({ movieId }: { movieId: number }) {
         <div className="flex gap-6 -mt-24 relative z-10">
           {posterUrl && (
             <div className="hidden md:block w-48 shrink-0">
-              <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-2xl">
+              {/*
+                view-transition-name: FilmCard의 poster-{id}와 일치해야 브라우저가
+                카드 → 상세 이동 시 포스터를 자연스럽게 모핑함
+              */}
+              <div
+                className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-2xl"
+                style={{ viewTransitionName: `poster-${movieId}` }}
+              >
                 <Image src={posterUrl} alt={movie.title} fill className="object-cover" />
               </div>
             </div>
           )}
-          <FilmMeta movie={movie} />
+
+          {/* 메타 정보: 마운트 시 아래에서 위로 슬라이드업 */}
+          <motion.div
+            className="flex-1"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1], delay: 0.1 }}
+          >
+            <FilmMeta movie={movie} />
+          </motion.div>
         </div>
 
-        {/* 사용자 인터랙션 영역 — 로그인 상태일 때만 표시 */}
         {userId && (
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <motion.div
+            className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1], delay: 0.25 }}
+          >
             <WatchedButton tmdbId={movieId} initialWatched={isWatched} />
             <RatingWidget tmdbId={movieId} initialRating={rating} />
-          </div>
+          </motion.div>
         )}
 
-        <CastSection cast={topCast} />
+        {/* 출연진: 약간 늦게 등장해서 콘텐츠가 순서대로 나타나는 느낌 */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1], delay: 0.35 }}
+        >
+          <CastSection cast={topCast} />
+        </motion.div>
       </div>
     </>
   );
