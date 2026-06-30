@@ -88,6 +88,7 @@ export const ModalContainer = ({
                   src={heroUrl}
                   alt={title}
                   fill
+                  sizes="(max-width: 480px) 92vw, 440px"
                   className="object-cover"
                   placeholder="blur"
                   blurDataURL={blurDataURL}

@@ -65,7 +65,7 @@ async function FilmDetail({ movieId }: { movieId: number }) {
     <>
       {backdropUrl && (
         <div className="relative h-64 md:h-96 w-full">
-          <Image src={backdropUrl} alt={movie.title} fill className="object-cover" priority />
+          <Image src={backdropUrl} alt={movie.title} fill sizes="100vw" className="object-cover" priority />
           <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
         </div>
       )}
@@ -82,7 +82,7 @@ async function FilmDetail({ movieId }: { movieId: number }) {
                 className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-2xl"
                 style={{ viewTransitionName: `poster-${movieId}` }}
               >
-                <Image src={posterUrl} alt={movie.title} fill className="object-cover" />
+                <Image src={posterUrl} alt={movie.title} fill sizes="192px" className="object-cover" />
               </div>
             </div>
           )}

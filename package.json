@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "analyze": "ANALYZE=true next build",
+    "analyze": "next experimental-analyze",
     "db:push": "dotenv -e .env.local -- drizzle-kit push"
   },
   "dependencies": {
@@ -21,7 +21,6 @@
     "web-vitals": "^5.3.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^16.2.9",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
