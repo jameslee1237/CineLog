@@ -107,16 +107,6 @@ export const NavbarSearch = () => {
           </span>
         )}
       </div>
-      {/* 검색 페이지가 아닐 때만 닫기 버튼 표시 */}
-      {!isOnSearchPage && (
-        <button
-          onClick={collapse}
-          aria-label="Close search"
-          className="text-gray-400 hover:text-white transition-colors text-lg leading-none"
-        >
-          ×
-        </button>
-      )}
     </div>
   );
 };
