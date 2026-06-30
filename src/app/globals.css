@@ -12,6 +12,11 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  /* 스크롤바 공간을 항상 예약 — overflow:hidden으로 스크롤바가 사라져도 레이아웃 이동 없음 */
+  scrollbar-gutter: stable;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
