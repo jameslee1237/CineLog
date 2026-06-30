@@ -9,7 +9,7 @@ import {
 import { getWatchedStatus, getRating } from '@/lib/db/queries';
 import { WatchedButton } from '@/components/film/WatchedButton';
 import { RatingWidget } from '@/components/film/RatingWidget';
-import { motion } from '@/components/ui/MotionDiv';
+import { MotionDiv } from '@/components/ui/MotionDiv';
 import { auth } from '@clerk/nextjs/server';
 import { Suspense } from 'react';
 import Image from 'next/image';
@@ -88,18 +88,18 @@ async function FilmDetail({ movieId }: { movieId: number }) {
           )}
 
           {/* 메타 정보: 마운트 시 아래에서 위로 슬라이드업 */}
-          <motion.div
+          <MotionDiv
             className="flex-1"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1], delay: 0.1 }}
           >
             <FilmMeta movie={movie} />
-          </motion.div>
+          </MotionDiv>
         </div>
 
         {userId && (
-          <motion.div
+          <MotionDiv
             className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -107,17 +107,17 @@ async function FilmDetail({ movieId }: { movieId: number }) {
           >
             <WatchedButton tmdbId={movieId} initialWatched={isWatched} />
             <RatingWidget tmdbId={movieId} initialRating={rating} />
-          </motion.div>
+          </MotionDiv>
         )}
 
         {/* 출연진: 약간 늦게 등장해서 콘텐츠가 순서대로 나타나는 느낌 */}
-        <motion.div
+        <MotionDiv
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1], delay: 0.35 }}
         >
           <CastSection cast={topCast} />
-        </motion.div>
+        </MotionDiv>
       </div>
     </>
   );
