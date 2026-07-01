@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { FALLBACK_BLUR } from '@/lib/blur';
 import type { ITmdbMovie } from '@/lib/tmdb';
 import { InteractiveFilmCard } from './InteractiveFilmCard';
+import { TiltProvider } from './TiltProvider';
 
 interface IFilmCardGridProps {
   movies: ITmdbMovie[];
@@ -24,31 +25,33 @@ export const FilmCardGrid = ({ movies, blurUrls = [] }: IFilmCardGridProps) => {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <motion.div
-      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
-      variants={containerVariants}
-      // 모션 감소 설정 시 즉시 최종 상태로 렌더 (애니메이션 완전 생략)
-      initial={prefersReducedMotion ? false : 'hidden'}
-      animate={prefersReducedMotion ? false : 'visible'}
-    >
-      {movies.map((movie, index) => (
-        <motion.div
-          key={movie.id}
-          variants={cardVariants}
-          transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-        >
-          {/*
-            priority는 첫 2장만 — 모바일(2열)의 첫 행과 LCP 후보에 해당.
-            6장을 동시에 priority로 걸면 preload 요청이 서로 대역폭을 경쟁해
-            실제 LCP 이미지의 로딩이 오히려 늦어짐 (모바일 스로틀링에서 특히 뚜렷)
-          */}
-          <InteractiveFilmCard
-            movie={movie}
-            blurDataURL={blurUrls[index] ?? FALLBACK_BLUR}
-            priority={index < 2}
-          />
-        </motion.div>
-      ))}
-    </motion.div>
+    <TiltProvider>
+      <motion.div
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+        variants={containerVariants}
+        // 모션 감소 설정 시 즉시 최종 상태로 렌더 (애니메이션 완전 생략)
+        initial={prefersReducedMotion ? false : 'hidden'}
+        animate={prefersReducedMotion ? false : 'visible'}
+      >
+        {movies.map((movie, index) => (
+          <motion.div
+            key={movie.id}
+            variants={cardVariants}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+          >
+            {/*
+              priority는 첫 2장만 — 모바일(2열)의 첫 행과 LCP 후보에 해당.
+              6장을 동시에 priority로 걸면 preload 요청이 서로 대역폭을 경쟁해
+              실제 LCP 이미지의 로딩이 오히려 늦어짐 (모바일 스로틀링에서 특히 뚜렷)
+            */}
+            <InteractiveFilmCard
+              movie={movie}
+              blurDataURL={blurUrls[index] ?? FALLBACK_BLUR}
+              priority={index < 2}
+            />
+          </motion.div>
+        ))}
+      </motion.div>
+    </TiltProvider>
   );
 };

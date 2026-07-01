@@ -81,16 +81,23 @@ async function FilmDetail({ movieId }: { movieId: number }) {
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="flex gap-6 -mt-24 relative z-10">
           {posterUrl && (
-            <div className="hidden md:block w-48 shrink-0">
+            <div className="w-28 md:w-48 shrink-0">
               {/*
                 view-transition-name: FilmCard의 poster-{id}와 일치해야 브라우저가
-                카드 → 상세 이동 시 포스터를 자연스럽게 모핑함
+                카드 → 상세 이동 시 포스터를 자연스럽게 모핑함.
+                모바일에서도 항상 표시(hidden 제거) — 데스크톱보다 작은 크기(w-28)로.
               */}
               <div
                 className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-2xl"
                 style={{ viewTransitionName: `poster-${movieId}` }}
               >
-                <Image src={posterUrl} alt={movie.title} fill sizes="192px" className="object-cover" />
+                <Image
+                  src={posterUrl}
+                  alt={movie.title}
+                  fill
+                  sizes="(max-width: 767px) 112px, 192px"
+                  className="object-cover"
+                />
               </div>
             </div>
           )}
@@ -136,7 +143,7 @@ interface IFilmMetaProps {
 }
 
 const FilmMeta = ({ movie }: IFilmMetaProps) => (
-  <div className="flex-1 pt-24 md:pt-0">
+  <div className="flex-1">
     <h1 className="text-3xl font-bold">{movie.title}</h1>
     {movie.tagline && <p className="text-gray-400 italic mt-1">{movie.tagline}</p>}
     <div className="flex gap-3 mt-2 text-sm text-gray-400">
@@ -189,10 +196,10 @@ const FilmDetailSkeleton = () => (
     <div className="h-64 md:h-96 w-full bg-gray-800" />
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex gap-6 -mt-24 relative z-10">
-        <div className="hidden md:block w-48 shrink-0">
+        <div className="w-28 md:w-48 shrink-0">
           <div className="aspect-[2/3] rounded-lg bg-gray-700" />
         </div>
-        <div className="flex-1 pt-24 md:pt-0 space-y-3">
+        <div className="flex-1 space-y-3">
           <div className="h-8 w-2/3 rounded bg-gray-700" />
           <div className="h-4 w-1/3 rounded bg-gray-700" />
           <div className="h-4 w-full rounded bg-gray-700 mt-4" />
