@@ -20,6 +20,16 @@ on `InteractiveFilmCard` for touch/coarse-pointer devices). That's reserved for
 Phase 9 — this phase's above-fold fix (§3) is scoped by vertical position, not
 input type, so it doesn't preempt that later work.
 
+**Captured problem for Phase 9** (not addressed here): on touch devices, the
+`dragElastic={0.18}` + `dragSnapToOrigin` gesture reads as "this card is
+draggable/reorderable" because touch is direct-manipulation — a finger physically
+moving the element implies it can be relocated, unlike the same elastic wobble
+under a mouse cursor, which reads as decorative feedback. Nothing is actually
+reorderable; the card always springs back. Phase 9 should address this, likely by
+shrinking or disabling `drag` under a `pointer: coarse` media query rather than
+tuning the elastic constant further — the affordance itself doesn't earn its
+keep on touch.
+
 ## §2 — Isolate the Navbar's `auth()` call
 
 **Problem**: `src/components/ui/Navbar.tsx`'s top-level `Navbar` component is
