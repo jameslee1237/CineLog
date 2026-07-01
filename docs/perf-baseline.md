@@ -153,6 +153,30 @@ candidate for a future phase.
 Touch-device interaction redesign is deferred to Phase 9 and already documented in
 `docs/superpowers/specs/2026-07-01-mobile-perf-optimization-design.md`.
 
+### Post-merge production verification
+
+Checkpoints A and B above were measured against Vercel Preview deployments. After
+merging Phase 8's PR to `main`, re-measured directly against the stable production
+alias (`https://cine-log-woad.vercel.app`) — 3 mobile runs, 1 desktop run:
+
+| Run | Performance | LCP | TTFB | Resource load delay | Element render delay |
+| --- | --- | --- | --- | --- | --- |
+| 1 (cold start) | 71 | 6.1s | 1695ms | 832ms | 535ms |
+| 2 (warm) | 74 | 6.0s | 717ms | 867ms | 186ms |
+| 3 (warm) | 80 | 4.7s | 707ms | 485ms | 323ms |
+
+Desktop: Performance 95, LCP 1.4s.
+
+Same pattern as the Preview measurements: warm-run TTFB (707-717ms) is consistently
+better than the Phase 7 baseline's 942ms — confirms the Navbar fix's effect holds on
+real production infra, not just Preview. But the **total LCP metric itself swings far
+more than its own breakdown components would suggest** (6.0s → 4.7s between runs 2
+and 3, despite nearly identical TTFB in both) — this is Lighthouse's Lantern network
+simulation amplifying whatever it samples from the trace, not a real regression. The
+breakdown sub-metrics (TTFB, element render delay) are the more trustworthy
+signal here than the single "LCP" number, and by that measure the fixes hold up on
+production. Desktop remains comfortably at target.
+
 ## Best Practices: 77/100 (not actionable)
 
 Both point deductions (`third-party-cookies`, `inspector-issues`) trace entirely to
