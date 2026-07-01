@@ -4,7 +4,7 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FALLBACK_BLUR } from '@/lib/blur';
 import { getPosterUrl, type ITmdbMovie } from '@/lib/tmdb';
 import { useTilt } from './TiltProvider';
@@ -27,9 +27,31 @@ export const InteractiveFilmCard = ({
   const posterUrl = getPosterUrl(movie.poster_path, 'w342');
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
+  // priority 카드가 LCP 이후 완전한 인터랙티브 버전으로 전환됐는지 여부
+  const [isUpgraded, setIsUpgraded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   // 드래그 후 click 이벤트 방지 — onDragStart에서 true, onDragEnd 후 50ms 타임아웃으로 리셋
   const hasDraggedRef = useRef(false);
+
+  // priority 카드: 실제 LCP 이벤트가 관측된 직후에만 업그레이드 — 고정 딜레이 대신
+  // PerformanceObserver로 정확한 시점을 잡는다. 이 시점엔 포스터 이미지가 이미
+  // 페인트·캐시되어 있어, 이후 motion.div로 감싸는 리마운트가 눈에 보이는 재요청/
+  // 재디코드를 유발하지 않는다.
+  useEffect(() => {
+    if (!priority) return;
+    if (typeof PerformanceObserver === 'undefined') {
+      // react-hooks/set-state-in-effect: setState는 콜백에서만 호출해야 하므로
+      // 폴백 경로도 동기 호출을 피하고 매크로태스크로 미룸
+      const timer = setTimeout(() => setIsUpgraded(true), 0);
+      return () => clearTimeout(timer);
+    }
+    const observer = new PerformanceObserver(() => {
+      setIsUpgraded(true);
+      observer.disconnect();
+    });
+    observer.observe({ type: 'largest-contentful-paint', buffered: true });
+    return () => observer.disconnect();
+  }, [priority]);
 
   // 데스크톱 마우스 기반 틸트 + 광택 — 터치 카드는 이 값을 쓰지 않고
   // TiltProvider의 공유 값을 쓰지만, Rules of Hooks 때문에 항상 호출해야 함
@@ -103,12 +125,13 @@ export const InteractiveFilmCard = ({
     </div>
   );
 
-  // above-the-fold(priority) 카드는 틸트/광택/드래그 트리를 렌더하지 않음 —
-  // 이 카드들이 LCP 후보이므로, motion.div 마운트·layoutId reconciliation·
-  // drag 리스너·glare/hover-hint 렌더 등 JSX 트리 비용을 제거해 mobile LCP를
-  // 단축한다. 데스크톱/터치 여부와 무관하게 항상 이 정적 버전 — phase 8에서
-  // 측정한 LCP 개선을 유지하기 위해 자이로스코프 틸트도 여기엔 적용하지 않음.
-  if (priority) {
+  // above-the-fold(priority) 카드는 LCP가 관측되기 전까지만 틸트/광택/드래그
+  // 트리를 렌더하지 않음 — motion.div 마운트·layoutId reconciliation·drag
+  // 리스너·glare/hover-hint 렌더 등 JSX 트리 비용을 제거해 mobile LCP를 단축한다.
+  // isUpgraded가 true가 되면(위 useEffect, LCP 관측 직후) 아래 분기로 흘러가
+  // 다른 카드와 동일한 인터랙티브 버전이 된다 — 이미지가 이미 페인트·캐시된
+  // 이후이므로 이 전환은 LCP 지표에 영향을 주지 않는다.
+  if (priority && !isUpgraded) {
     return (
       <div>
         <Link
