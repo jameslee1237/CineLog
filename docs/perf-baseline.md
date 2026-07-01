@@ -58,6 +58,101 @@ fixable at the component level. Candidate follow-ups (out of scope for this phas
 ISR/caching the trending-list RSC response, or moving image optimization closer to
 the edge. Desktop — representative of most real visitors — already meets target.
 
+## Phase 8: Mobile optimization
+
+Two fixes landed this phase: Navbar `auth()` Suspense isolation (targets TTFB) and
+above-fold card simplification (targets element render delay). Both were measured
+against **Vercel Preview deployments**, not the production URL used above — the first
+time this doc measures against Preview. That matters: see the methodology note below
+before reading the numbers as a clean before/after story, because it isn't one.
+
+For reference, the real-user baseline going into this phase (Vercel Speed Insights,
+production, p75 mobile) was ~3.68s LCP — noted here since the lab numbers below are
+all Preview/simulated and don't supersede it.
+
+### Methodology note: Preview infra, protection bypass, and run-to-run noise
+
+Preview deployments sit behind Vercel's Deployment Protection. The query-param bypass
+method silently redirected to a login page and produced garbage Lighthouse numbers —
+every number below was only accepted after confirming `finalDisplayedUrl` in the
+Lighthouse JSON actually pointed at the app (not the login page). The working method
+was the `x-vercel-protection-bypass` HTTP header instead.
+
+Preview infra also shows meaningfully more TTFB variance than the Phase 7 production
+baseline. Within each checkpoint below, cold-start TTFB ran 1.4-2x higher than the
+warm runs measured immediately after (Checkpoint A: 1097ms → 767ms; Checkpoint B:
+1893ms → 803ms). That swing is comparable in magnitude to the effect either fix is
+expected to produce, so this section deliberately does **not** present a single
+cherry-picked "before → after" LCP number as if it came from a controlled experiment.
+
+### Checkpoint A — after Navbar `auth()` Suspense isolation (Preview)
+
+| Run | Performance | LCP | TTFB |
+| --- | --- | --- | --- |
+| 1 (cold start) | 77 | 4.8s | 1097ms |
+| 2 (warm) | 79 | 4.7s | 787ms |
+| 3 (warm) | 80 | 4.6s | 767ms |
+
+Desktop: Performance 94, LCP 1.3s.
+
+This fix targets TTFB specifically. Comparing warm-run TTFB (767-787ms) against the
+Phase 7 production baseline's 942ms, Checkpoint A is meaningfully lower — a real,
+plausible signal that isolating Navbar's `auth()` call behind Suspense helps. It is
+not a perfect apples-to-apples comparison, though, since the baseline was measured on
+production and this checkpoint on Preview infra with its own added variance.
+
+### Checkpoint B — after above-fold card simplification (cumulative with Checkpoint A, Preview)
+
+| Run | Performance | LCP | TTFB | Element render delay |
+| --- | --- | --- | --- | --- |
+| 1 (cold start) | 74 | 4.7s | 1893ms | 230ms |
+| 2 (warm) | 79 | 4.6s | 803ms | 159ms |
+| 3 (warm) | 77 | 4.9s | 1139ms | 286ms |
+
+Desktop: Performance 93, LCP 1.4s.
+
+This fix targets element render delay specifically (per the code-quality review that
+approved the change — see below). Checkpoint B's warm-run element render delay
+(159-286ms, average ~222ms) is somewhat lower than what Checkpoint A implies as a
+comparison point, but the 159ms-to-286ms swing *within Checkpoint B's own two warm
+runs* is nearly as large as any before/after difference. This is a plausible small
+improvement, not a clean, statistically confident win.
+
+### Why the card-simplification win is small: a partial optimization
+
+A code-quality review of the card-simplification commit found the fix is **partial**.
+For above-the-fold (`priority`) cards, the JSX tree that renders `motion.div`,
+`layoutId` reconciliation, drag listeners, and the glare/hover-hint elements is
+correctly skipped. But the underlying `useSpring`/`useTransform` hook subscriptions
+(Framer Motion's `useInsertionEffect`-driven `attachFollow`) still fire on every
+priority-card mount regardless of branch — Rules of Hooks requires calling them
+unconditionally, so they can't be conditionally skipped inside the same component.
+This is documented directly in code comments in
+`src/components/film/InteractiveFilmCard.tsx`. It's a plausible explanation for why
+the measured improvement is small and noisy rather than dramatic.
+
+A fuller fix — splitting the component in two (a plain card and a
+tilt/glare/drag-enabled card), with the parent grid choosing which one to instantiate
+per card — would let the hook-bearing component never mount for priority cards at
+all. That's out of scope for this phase; tracked as a follow-up.
+
+### Static/ISR escalation: investigated, not eligible
+
+After isolating Navbar's `auth()`, `pnpm build`'s route table still marks `/` as `ƒ`
+(fully dynamic) — the legend is unchanged, with only the one dynamic-rendering line,
+no new static/ISR indicator. The likely remaining cause: `ClerkProvider` wraps the
+entire tree in `src/app/layout.tsx` (above the `<html>` tag) and is documented to read
+the incoming request's auth cookies to bootstrap client-side auth state. That can
+force the whole route tree dynamic independent of any individual component's own
+`auth()` Suspense isolation. Not pursued further this phase — whether `ClerkProvider`
+has an opt-out, or can be scoped more narrowly than the full root layout, is a
+candidate for a future phase.
+
+### Deferred to Phase 9
+
+Touch-device interaction redesign is deferred to Phase 9 and already documented in
+`docs/superpowers/specs/2026-07-01-mobile-perf-optimization-design.md`.
+
 ## Best Practices: 77/100 (not actionable)
 
 Both point deductions (`third-party-cookies`, `inspector-issues`) trace entirely to
@@ -114,3 +209,16 @@ CI-automatable).
   약 30% 차지
 - **상시 모니터링**: Lighthouse CI(배포마다 자동 실행) + Vercel Speed Insights(실사용자
   실측 데이터)
+- **Phase 8 (모바일 최적화)**: Navbar `auth()` Suspense 격리 + above-fold 카드 단순화
+  적용. Vercel Preview 배포본 대상 측정(프로덕션 대비 TTFB 편차가 크고, 같은 체크포인트
+  안에서도 cold-start TTFB가 warm-run 대비 1.4~2배 — 예: Checkpoint A 1097ms→767ms,
+  Checkpoint B 1893ms→803ms) — 이 노이즈가 각 수정으로 기대되는 효과 크기와 비슷해서
+  단일 before/after 숫자로 "깨끗한" 개선을 주장하지 않음. Navbar 수정은 warm TTFB
+  (767~787ms)가 Phase 7 프로덕션 베이스라인(942ms)보다 낮아 실제 개선 가능성이 있는
+  신호로 판단. 카드 단순화는 element render delay 타겟이지만 Checkpoint B 자체의 warm
+  run 편차(159~286ms)가 개선 폭만큼 커서 "작고 불확실한 개선"으로만 평가 — 코드 리뷰
+  결과 `useSpring`/`useTransform` 구독이 Rules of Hooks 때문에 priority 분기와 무관하게
+  항상 실행되는 부분적 최적화임이 확인됨(완전한 fix는 컴포넌트 분리, 이번 phase 범위 밖).
+  Static/ISR 전환은 조사했으나 아직 불가 — `ClerkProvider`가 루트 레이아웃 전체를
+  감싸며 요청 쿠키를 읽어 라우트를 dynamic으로 강제하는 것이 원인으로 추정(후속 phase
+  과제). 터치 인터랙션 재설계는 Phase 9로 연기.
