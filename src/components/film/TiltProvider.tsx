@@ -9,6 +9,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 
@@ -38,6 +39,18 @@ const BETA_BASELINE = 45;
 const TILT_RANGE_DEG = 30;
 const UNSUPPORTED_TIMEOUT_MS = 1500;
 
+// pointer 타입(터치 vs 마우스)을 useSyncExternalStore로 구독 — useEffect 안에서
+// setState를 직접 호출하지 않도록 하는 React 권장 패턴 (react-hooks/set-state-in-effect 회피)
+const subscribeToPointerType = (callback: () => void) => {
+  const mediaQuery = window.matchMedia('(pointer: coarse)');
+  mediaQuery.addEventListener('change', callback);
+  return () => mediaQuery.removeEventListener('change', callback);
+};
+
+const getPointerTypeSnapshot = () => window.matchMedia('(pointer: coarse)').matches;
+
+const getServerPointerTypeSnapshot = () => false;
+
 interface ITiltProviderProps {
   children: ReactNode;
 }
@@ -50,14 +63,14 @@ export const TiltProvider = ({ children }: ITiltProviderProps) => {
   const tiltY = useSpring(useTransform(rawX, [-1, 1], [-TILT_DEG, TILT_DEG]), SPRING_CONFIG);
 
   const [permissionState, setPermissionState] = useState<TPermissionState>('unknown');
-  const [isTouch, setIsTouch] = useState(false);
+  const isTouch = useSyncExternalStore(
+    subscribeToPointerType,
+    getPointerTypeSnapshot,
+    getServerPointerTypeSnapshot,
+  );
   const listenerAttachedRef = useRef(false);
   const unsupportedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isRequestingRef = useRef(false);
-
-  useEffect(() => {
-    setIsTouch(window.matchMedia('(pointer: coarse)').matches);
-  }, []);
 
   const handleOrientation = useCallback(
     (event: DeviceOrientationEvent) => {
