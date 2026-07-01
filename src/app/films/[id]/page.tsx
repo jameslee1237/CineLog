@@ -64,7 +64,11 @@ async function FilmDetail({ movieId }: { movieId: number }) {
   return (
     <>
       {backdropUrl && (
-        <div className="relative h-64 md:h-96 w-full">
+        // aspect-video(16:9)로 TMDB 백드롭의 실제 비율에 맞춤 — 이전엔 h-64/md:h-96
+        // 고정 높이 + w-full이라 넓은 화면에서 원본보다 훨씬 가로로 긴 컨테이너가 되어
+        // object-cover가 이미지 위/아래를 과도하게 잘라냄. max-h로 초광폭 화면에서
+        // 배너가 지나치게 커지는 것만 제한.
+        <div className="relative w-full aspect-video max-h-[420px] overflow-hidden">
           <Image
             src={backdropUrl}
             alt={movie.title}
@@ -193,7 +197,7 @@ const CastSection = ({ cast }: ICastSectionProps) => (
 
 const FilmDetailSkeleton = () => (
   <div className="animate-pulse">
-    <div className="h-64 md:h-96 w-full bg-gray-800" />
+    <div className="w-full aspect-video max-h-[420px] bg-gray-800" />
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex gap-6 -mt-24 relative z-10">
         <div className="w-28 md:w-48 shrink-0">
