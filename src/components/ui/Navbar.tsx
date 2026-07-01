@@ -1,7 +1,9 @@
 import { SignInButton, UserButton } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
-import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
+import { Link } from '@/i18n/navigation';
+import { LocaleSwitcher } from './LocaleSwitcher';
 import { NavbarSearch } from './NavbarSearch';
 
 export const Navbar = () => (
@@ -27,7 +29,8 @@ export const Navbar = () => (
         이전에는 Navbar 전체가 async 함수여서 await auth()가 페이지 전체의
         첫 바이트 전송을 막고 있었음.
       */}
-      <nav className="ml-auto flex items-center gap-4 shrink-0">
+      <nav className="ml-auto flex items-center gap-2 shrink-0">
+        <LocaleSwitcher />
         <Suspense fallback={<AuthSlotFallback />}>
           <NavbarAuthSlot />
         </Suspense>
@@ -38,12 +41,13 @@ export const Navbar = () => (
 
 const NavbarAuthSlot = async () => {
   const { userId } = await auth();
+  const t = await getTranslations('nav');
 
   if (userId) {
     return (
       <>
         <Link href="/profile" className="text-sm text-gray-300 hover:text-white transition-colors">
-          My List
+          {t('myList')}
         </Link>
         <UserButton />
       </>
@@ -53,7 +57,7 @@ const NavbarAuthSlot = async () => {
   return (
     <SignInButton mode="modal">
       <button className="rounded-full bg-gray-700 px-4 py-1.5 text-sm font-medium hover:bg-gray-600 transition-colors">
-        Sign In
+        {t('signIn')}
       </button>
     </SignInButton>
   );

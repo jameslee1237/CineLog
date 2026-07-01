@@ -1,13 +1,16 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
+import { usePathname, useRouter } from '@/i18n/navigation';
 
 export const NavbarSearch = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations('nav');
 
   const isOnSearchPage = pathname === '/search';
   const urlQuery = searchParams.get('q') ?? '';
@@ -75,7 +78,7 @@ export const NavbarSearch = () => {
     return (
       <button
         onClick={expand}
-        aria-label="Search"
+        aria-label={t('search')}
         className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
       >
         <SearchIcon />
@@ -96,10 +99,10 @@ export const NavbarSearch = () => {
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
-          placeholder="Search films..."
+          placeholder={t('searchPlaceholder')}
           autoFocus
           className="w-full rounded-lg bg-gray-800 py-1.5 pl-9 pr-3 text-sm outline-none ring-1 ring-emerald-500 transition-shadow focus:ring-2"
-          aria-label="Search films"
+          aria-label={t('searchFilms')}
         />
         {isPending && (
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 animate-pulse">
