@@ -6,6 +6,10 @@
     "searchFilms": "영화 검색",
     "searchPlaceholder": "영화 제목을 검색하세요..."
   },
+  "localeSwitcher": {
+    "switchToKorean": "한국어로 전환",
+    "switchToEnglish": "영어로 전환"
+  },
   "film": {
     "trending": "이번 주 트렌딩",
     "cast": "출연진",

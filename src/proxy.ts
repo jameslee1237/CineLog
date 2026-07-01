@@ -1,16 +1,20 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import createMiddleware from 'next-intl/middleware';
+import { LOCALES } from '@/i18n/locales';
 import { routing } from '@/i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
 
+// LOCALES에서 파생 — 로케일이 추가/제거되면 이 패턴도 자동으로 갱신됨
+const localePattern = `(${LOCALES.join('|')})`;
+
 const isPublicRoute = createRouteMatcher([
   '/',
-  '/(en|kr)',
-  '/(en|kr)/films/(.*)',
+  `/${localePattern}`,
+  `/${localePattern}/films/(.*)`,
   '/api/(.*)',
-  '/(en|kr)/sign-in(.*)',
-  '/(en|kr)/sign-up(.*)',
+  `/${localePattern}/sign-in(.*)`,
+  `/${localePattern}/sign-up(.*)`,
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

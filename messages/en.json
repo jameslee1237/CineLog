@@ -6,6 +6,10 @@
     "searchFilms": "Search films",
     "searchPlaceholder": "Search films..."
   },
+  "localeSwitcher": {
+    "switchToKorean": "Switch to Korean",
+    "switchToEnglish": "Switch to English"
+  },
   "film": {
     "trending": "Trending This Week",
     "cast": "Cast",
