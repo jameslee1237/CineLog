@@ -79,8 +79,8 @@ export const InteractiveFilmCard = ({
 
   // 터치 카드 탭: 첫 탭에서 권한 요청(이미 결정된 상태면 내부적으로 즉시 반환) 후 이동.
   // 권한 결과와 무관하게 항상 이동 — 권한은 다음번 카드들의 앰비언트 틸트 여부만 결정.
-  const handleTouchTap = useCallback(async () => {
-    await requestPermission();
+  const handleTouchTap = useCallback(() => {
+    void requestPermission();
     router.push(`/films/${movie.id}`);
   }, [requestPermission, router, movie.id]);
 

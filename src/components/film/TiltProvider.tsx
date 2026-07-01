@@ -6,6 +6,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -126,8 +127,13 @@ export const TiltProvider = ({ children }: ITiltProviderProps) => {
     };
   }, [handleOrientation]);
 
+  const contextValue = useMemo(
+    () => ({ tiltX, tiltY, permissionState, requestPermission, isTouch }),
+    [tiltX, tiltY, permissionState, requestPermission, isTouch],
+  );
+
   return (
-    <TiltContext.Provider value={{ tiltX, tiltY, permissionState, requestPermission, isTouch }}>
+    <TiltContext.Provider value={contextValue}>
       {children}
     </TiltContext.Provider>
   );
