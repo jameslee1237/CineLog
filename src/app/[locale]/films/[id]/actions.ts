@@ -2,9 +2,18 @@
 
 import { db } from '@/lib/db';
 import { ratings, watchedFilms } from '@/lib/db/schema';
+import { LOCALES } from '@/i18n/locales';
 import { auth } from '@clerk/nextjs/server';
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+
+const revalidateFilmPaths = (tmdbId: number) => {
+  // 라우트가 로케일별로 분리된 캐시 항목이므로, 두 로케일을 모두 갱신해야 함
+  for (const locale of LOCALES) {
+    revalidatePath(`/${locale}/films/${tmdbId}`);
+    revalidatePath(`/${locale}/profile`);
+  }
+};
 
 export const toggleWatched = async (tmdbId: number): Promise<{ watched: boolean }> => {
   const { userId } = await auth();
@@ -20,14 +29,12 @@ export const toggleWatched = async (tmdbId: number): Promise<{ watched: boolean 
     await db
       .delete(watchedFilms)
       .where(and(eq(watchedFilms.userId, userId), eq(watchedFilms.tmdbId, tmdbId)));
-    revalidatePath(`/films/${tmdbId}`);
-    revalidatePath('/profile');
+    revalidateFilmPaths(tmdbId);
     return { watched: false };
   }
 
   await db.insert(watchedFilms).values({ userId, tmdbId });
-  revalidatePath(`/films/${tmdbId}`);
-  revalidatePath('/profile');
+  revalidateFilmPaths(tmdbId);
   return { watched: true };
 };
 
@@ -48,6 +55,5 @@ export const setRating = async (tmdbId: number, score: number): Promise<void> =>
     await db.insert(ratings).values({ userId, tmdbId, score });
   }
 
-  revalidatePath(`/films/${tmdbId}`);
-  revalidatePath('/profile');
+  revalidateFilmPaths(tmdbId);
 };
