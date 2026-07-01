@@ -21,6 +21,16 @@ echo "Deployment URL: $DEPLOY_URL"
 
 `GITHUB_TOKEN=` (empty, trailing space significant) clears a stale env var that otherwise causes `gh` to fail with 401 — confirmed necessary in this environment. This same technique works for both preview (branch push) and production (main push) deployments — it reads whichever deployment matches the current commit SHA, so every "push and measure" task below uses it uniformly and stores the result in `$DEPLOY_URL` for that task's Lighthouse commands.
 
+**Vercel Deployment Protection (discovered during Task 2 execution — read before running any Lighthouse command below):** this project's Preview deployments are gated by Vercel's Deployment Protection (SSO wall) — unauthenticated requests (including Lighthouse's) get redirected to a `vercel.com/login` page instead of reaching the app, silently producing garbage measurements if not checked. Fix: the user generated a "Protection Bypass for Automation" secret (Vercel dashboard → Project Settings → Deployment Protection). It must be passed as an **HTTP header**, not a query param — `?x-vercel-protection-bypass=<secret>` was tested and did NOT work (still redirected to login); `-H "x-vercel-protection-bypass: <secret>"` DID work (confirmed via curl reaching the real `<title>CineLog</title>` page). Every Lighthouse command against a Preview URL in this plan must include:
+
+```bash
+--extra-headers='{"x-vercel-protection-bypass":"<secret>"}'
+```
+
+The secret itself must never be committed to this repo (it's a live credential) — the controller holds it out-of-band and supplies it directly to whichever subagent runs a Lighthouse command, it does not belong in this file or in any commit message. **Always verify** a Lighthouse run actually reached the app, not a login page, by checking `finalDisplayedUrl` in the output JSON (or `finalUrl` in older Lighthouse versions) equals the deployment URL, not `vercel.com/...` — Task 2 initially produced two fully invalid measurements (Performance 50/LCP 12.1s and Performance 82/LCP 2.4s) that were measurements of the Vercel login page, caught only by checking this field. Production deployments (main branch, e.g. Task 8's post-merge check) are NOT protected this way — this header is only needed for Preview URLs.
+
+**Cold-start variance on Preview deployments:** the first Lighthouse hit against a freshly-created Preview deployment can show a meaningfully worse TTFB than subsequent hits (observed: 1097ms on hit 1 vs. 767–787ms on hits 2–3 against the same URL) as the serverless function warms up. Run Lighthouse mobile at least twice against the same `$DEPLOY_URL` and use the later (warm) result(s), noting the cold-start outlier separately rather than discarding it silently.
+
 **No automated tests.** This project has no test framework configured (`package.json` has no test script; no jest/vitest in devDependencies) and the approved design explicitly scopes this phase to build-verified changes + manual Lighthouse measurement, matching how every prior phase in this project (0–7) was verified. Each task's correctness gate is `pnpm build` (TypeScript + compile check) plus the Lighthouse re-measurement, not unit tests.
 
 **Reference:** Full design at `docs/superpowers/specs/2026-07-01-mobile-perf-optimization-design.md`.
@@ -501,17 +511,22 @@ DEPLOY_URL=$(GITHUB_TOKEN= gh api repos/jameslee1237/CineLog/deployments/$DEPLOY
 echo "Deployment URL: $DEPLOY_URL"
 ```
 
-- [ ] **Step 3: Run Lighthouse mobile against the preview URL**
+- [ ] **Step 3: Run Lighthouse mobile against the preview URL (twice — see cold-start note in the plan header)**
+
+The controller supplies the bypass secret directly (never commit it). Run at least twice; use the warmer (second) result as the primary number, note the first as the cold-start data point:
 
 ```bash
 cd /Users/jameslee1237/WebstormProjects/CineLog
-npx --yes lighthouse "$DEPLOY_URL" --output=json --output-path=/tmp/lh-phase8-task3-mobile.json --chrome-flags="--headless --no-sandbox" --quiet
+npx --yes lighthouse "$DEPLOY_URL" --output=json --output-path=/tmp/lh-phase8-task3-mobile-1.json --extra-headers='{"x-vercel-protection-bypass":"<secret from controller>"}' --chrome-flags="--headless --no-sandbox" --quiet
+npx --yes lighthouse "$DEPLOY_URL" --output=json --output-path=/tmp/lh-phase8-task3-mobile-2.json --extra-headers='{"x-vercel-protection-bypass":"<secret from controller>"}' --chrome-flags="--headless --no-sandbox" --quiet
 ```
+
+After each run, verify `finalDisplayedUrl` in the output JSON matches `$DEPLOY_URL` (not a `vercel.com` login page) before trusting the numbers.
 
 - [ ] **Step 4: Run Lighthouse desktop against the preview URL**
 
 ```bash
-npx --yes lighthouse "$DEPLOY_URL" --output=json --output-path=/tmp/lh-phase8-task3-desktop.json --preset=desktop --chrome-flags="--headless --no-sandbox" --quiet
+npx --yes lighthouse "$DEPLOY_URL" --output=json --output-path=/tmp/lh-phase8-task3-desktop.json --preset=desktop --extra-headers='{"x-vercel-protection-bypass":"<secret from controller>"}' --chrome-flags="--headless --no-sandbox" --quiet
 ```
 
 - [ ] **Step 5: Extract and record the metrics**
@@ -622,17 +637,20 @@ DEPLOY_URL=$(GITHUB_TOKEN= gh api repos/jameslee1237/CineLog/deployments/$DEPLOY
 echo "Deployment URL: $DEPLOY_URL"
 ```
 
-- [ ] **Step 3: Run Lighthouse mobile against the preview URL**
+- [ ] **Step 3: Run Lighthouse mobile against the preview URL (twice — see cold-start note in the plan header)**
 
 ```bash
 cd /Users/jameslee1237/WebstormProjects/CineLog
-npx --yes lighthouse "$DEPLOY_URL" --output=json --output-path=/tmp/lh-phase8-task5-mobile.json --chrome-flags="--headless --no-sandbox" --quiet
+npx --yes lighthouse "$DEPLOY_URL" --output=json --output-path=/tmp/lh-phase8-task5-mobile-1.json --extra-headers='{"x-vercel-protection-bypass":"<secret from controller>"}' --chrome-flags="--headless --no-sandbox" --quiet
+npx --yes lighthouse "$DEPLOY_URL" --output=json --output-path=/tmp/lh-phase8-task5-mobile-2.json --extra-headers='{"x-vercel-protection-bypass":"<secret from controller>"}' --chrome-flags="--headless --no-sandbox" --quiet
 ```
+
+After each run, verify `finalDisplayedUrl` in the output JSON matches `$DEPLOY_URL`, not a login page.
 
 - [ ] **Step 4: Run Lighthouse desktop against the preview URL**
 
 ```bash
-npx --yes lighthouse "$DEPLOY_URL" --output=json --output-path=/tmp/lh-phase8-task5-desktop.json --preset=desktop --chrome-flags="--headless --no-sandbox" --quiet
+npx --yes lighthouse "$DEPLOY_URL" --output=json --output-path=/tmp/lh-phase8-task5-desktop.json --preset=desktop --extra-headers='{"x-vercel-protection-bypass":"<secret from controller>"}' --chrome-flags="--headless --no-sandbox" --quiet
 ```
 
 - [ ] **Step 5: Extract and record the metrics**
