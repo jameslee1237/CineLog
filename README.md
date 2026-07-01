@@ -48,6 +48,7 @@ CineLog는 트렌딩 영화 탐색, 검색, 상세 보기, 시청 표시, 별점
 | 5 | Animations — Framer Motion, View Transitions API, reduced-motion | ✅ Done |
 | 6 | Advanced streaming — `proxy.ts`, parallel routes + intercepting modal (`@modal` slot) | ✅ Done |
 | 7 | Perf audit — Lighthouse CI, bundle analysis, Speed Insights, `docs/perf-baseline.md` | ✅ Done |
+| 8 | Mobile perf — Navbar auth isolation, above-fold card simplification, static/ISR investigated (not yet eligible) | ✅ Done |
 
 ---
 
@@ -183,6 +184,7 @@ Measured after each phase on production (Vercel). Local measurements are not rep
 | 2 | CLS | < 0.1 | ✅ 0 |
 | 4 | INP | < 200ms | ✅ TBT 0ms (lab proxy) — field data via Speed Insights |
 | 7 | Overall | ≥ 90 (desktop) | ✅ 97 |
+| 8 | Mobile LCP | best-effort toward < 2.5s | partial improvement, noisy — see `docs/perf-baseline.md` §Phase 8 |
 
 Full methodology, mobile-throttled numbers, and the `fetchPriority` fix that closed most of the mobile LCP gap: see [`docs/perf-baseline.md`](docs/perf-baseline.md).
 
