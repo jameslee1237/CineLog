@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getMovieDetail, getTrending, LOCALE_TO_TMDB_LANGUAGE, searchMovies } from './tmdb';
+import { getLocale } from 'next-intl/server';
+import { getCurrentTmdbLanguage, getMovieDetail, getTrending, LOCALE_TO_TMDB_LANGUAGE, searchMovies } from './tmdb';
+
+vi.mock('next-intl/server', () => ({
+  getLocale: vi.fn(),
+}));
 
 const okJsonResponse = (body: unknown) => ({
   ok: true,
@@ -51,5 +56,17 @@ describe('searchMovies', () => {
     const [url] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toContain('query=dune');
     expect(url).toContain('language=ko-KR');
+  });
+});
+
+describe('getCurrentTmdbLanguage', () => {
+  it('resolves en to en-US', async () => {
+    vi.mocked(getLocale).mockResolvedValue('en');
+    expect(await getCurrentTmdbLanguage()).toBe('en-US');
+  });
+
+  it('resolves kr to ko-KR', async () => {
+    vi.mocked(getLocale).mockResolvedValue('kr');
+    expect(await getCurrentTmdbLanguage()).toBe('ko-KR');
   });
 });

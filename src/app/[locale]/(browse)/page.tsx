@@ -1,9 +1,8 @@
 import { FilmGrid } from '@/components/film/FilmGrid';
 import { FilmGridSkeleton } from '@/components/film/FilmGridSkeleton';
-import { LOCALE_TO_TMDB_LANGUAGE, getTrending } from '@/lib/tmdb';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getCurrentTmdbLanguage, getTrending } from '@/lib/tmdb';
+import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
-import type { TLocale } from '@/i18n/locales';
 
 export default async function BrowsePage() {
   const t = await getTranslations('film');
@@ -21,7 +20,6 @@ export default async function BrowsePage() {
 
 // 별도 async 컴포넌트로 분리해야 Suspense boundary가 동작함
 async function TrendingGrid() {
-  const locale = (await getLocale()) as TLocale;
-  const movies = await getTrending(LOCALE_TO_TMDB_LANGUAGE[locale]);
+  const movies = await getTrending(await getCurrentTmdbLanguage());
   return <FilmGrid movies={movies} />;
 }

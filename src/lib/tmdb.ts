@@ -1,3 +1,4 @@
+import { getLocale } from 'next-intl/server';
 import type { TLocale } from '@/i18n/locales';
 
 const TMDB_BASE = 'https://api.themoviedb.org/3';
@@ -18,6 +19,14 @@ export const LOCALE_TO_TMDB_LANGUAGE: Record<TLocale, TTmdbLanguage> = {
   en: 'en-US',
   kr: 'ko-KR',
 };
+
+// src/app/[locale]/layout.tsx가 hasLocale(routing.locales, locale) ? ... : notFound()로
+// 유효하지 않은 로케일을 이미 걸러내므로, 이 함수를 호출하는 모든 Server Component가 렌더링될
+// 시점에는 getLocale()이 앱에 설정된 로케일만 반환함이 보장됨 — 따라서 as TLocale 캐스팅이 안전함
+export async function getCurrentTmdbLanguage(): Promise<TTmdbLanguage> {
+  const locale = (await getLocale()) as TLocale;
+  return LOCALE_TO_TMDB_LANGUAGE[locale];
+}
 
 export interface ITmdbMovie {
   id: number;
