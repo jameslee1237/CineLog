@@ -116,6 +116,8 @@ export const InteractiveFilmCard = ({
               sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
               className="object-cover"
               priority={priority}
+              // Next.js 16: priority는 preload+eager만 제어하며 fetchPriority는 별도 opt-in
+              fetchPriority={priority ? 'high' : undefined}
               placeholder="blur"
               blurDataURL={blurDataURL}
             />

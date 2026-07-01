@@ -65,7 +65,15 @@ async function FilmDetail({ movieId }: { movieId: number }) {
     <>
       {backdropUrl && (
         <div className="relative h-64 md:h-96 w-full">
-          <Image src={backdropUrl} alt={movie.title} fill sizes="100vw" className="object-cover" priority />
+          <Image
+            src={backdropUrl}
+            alt={movie.title}
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+            fetchPriority="high"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
         </div>
       )}

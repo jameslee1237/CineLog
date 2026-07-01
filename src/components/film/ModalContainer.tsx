@@ -93,6 +93,7 @@ export const ModalContainer = ({
                   placeholder="blur"
                   blurDataURL={blurDataURL}
                   priority
+                  fetchPriority="high"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent" />
               </div>
