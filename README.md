@@ -49,6 +49,7 @@ CineLog는 트렌딩 영화 탐색, 검색, 상세 보기, 시청 표시, 별점
 | 6 | Advanced streaming — `proxy.ts`, parallel routes + intercepting modal (`@modal` slot) | ✅ Done |
 | 7 | Perf audit — Lighthouse CI, bundle analysis, Speed Insights, `docs/perf-baseline.md` | ✅ Done |
 | 8 | Mobile perf — Navbar auth isolation, above-fold card simplification, static/ISR investigated (not yet eligible) | ✅ Done |
+| 9 | Mobile UX — layout audit (film detail poster fix), gyroscope-driven touch tilt (`TiltProvider`), priority-card LCP-safe motion upgrade, backdrop aspect-ratio fix | ✅ Done |
 
 ---
 
@@ -174,6 +175,14 @@ KR: `useOptimistic`(React 19)은 Server Action 완료 전에 UI를 즉시 업데
 
 ---
 
+**Why do above-the-fold cards "upgrade" to motion after mount instead of always being static or always animated?**
+
+EN: The first 2 grid cards are the LCP candidates, so phase 7/8 rendered them as plain, motion-free elements to protect that metric. Rather than leaving them permanently inconsistent with the rest of the grid, a `PerformanceObserver` watches for the actual `largest-contentful-paint` entry and flips them to the full interactive treatment (desktop tilt/glare/drag, or mobile's gyroscope tilt) the instant it fires — by then the poster image is already painted and cached, so swapping its wrapper doesn't affect the metric. A fixed delay was considered and rejected: it would either fire before LCP on a slow connection (reintroducing the cost) or unnecessarily late on a fast one.
+
+KR: 그리드의 첫 2장은 LCP 후보이므로, phase 7/8에서 애니메이션 없는 순수 정적 엘리먼트로 렌더했습니다. 나머지 카드와 영구히 다르게 두지 않기 위해, `PerformanceObserver`로 실제 `largest-contentful-paint` 이벤트를 관찰하다가 발생 즉시 완전한 인터랙티브 버전(데스크톱 틸트/광택/드래그, 모바일 자이로스코프 틸트)으로 전환합니다. 이 시점엔 포스터 이미지가 이미 페인트·캐시되어 있어 래퍼 교체가 지표에 영향을 주지 않습니다. 고정 딜레이 방식은 느린 네트워크에서 LCP보다 먼저 발동(비용 재도입)하거나 빠른 네트워크에서 불필요하게 늦어지는 문제가 있어 배제했습니다.
+
+---
+
 ## Lighthouse Checkpoints / 라이트하우스 체크포인트
 
 Measured after each phase on production (Vercel). Local measurements are not representative because `preconnect` and image CDN latency don't apply.
@@ -185,6 +194,7 @@ Measured after each phase on production (Vercel). Local measurements are not rep
 | 4 | INP | < 200ms | ✅ TBT 0ms (lab proxy) — field data via Speed Insights |
 | 7 | Overall | ≥ 90 (desktop) | ✅ 97 |
 | 8 | Mobile LCP | best-effort toward < 2.5s | partial improvement, noisy — see `docs/perf-baseline.md` §Phase 8 |
+| 9 | Real-user score (Vercel Speed Insights) | maintain ≥ 90 both | ✅ mobile 98, desktop 96 (LCP 2.78s) |
 
 Full methodology, mobile-throttled numbers, and the `fetchPriority` fix that closed most of the mobile LCP gap: see [`docs/perf-baseline.md`](docs/perf-baseline.md).
 
