@@ -47,7 +47,7 @@ CineLog는 트렌딩 영화 탐색, 검색, 상세 보기, 시청 표시, 별점
 | 4 | Search + INP — debounce, `useTransition`, RSC search page | ✅ Done |
 | 5 | Animations — Framer Motion, View Transitions API, reduced-motion | ✅ Done |
 | 6 | Advanced streaming — `proxy.ts`, parallel routes + intercepting modal (`@modal` slot) | ✅ Done |
-| 7 | Perf audit — Lighthouse CI, bundle analysis, `docs/perf-baseline.md` | ⏳ Planned |
+| 7 | Perf audit — Lighthouse CI, bundle analysis, Speed Insights, `docs/perf-baseline.md` | ✅ Done |
 
 ---
 
@@ -177,14 +177,14 @@ KR: `useOptimistic`(React 19)은 Server Action 완료 전에 UI를 즉시 업데
 
 Measured after each phase on production (Vercel). Local measurements are not representative because `preconnect` and image CDN latency don't apply.
 
-| Phase | Metric | Target |
-|---|---|---|
-| 2 | LCP | < 2.5s |
-| 2 | CLS | < 0.1 |
-| 4 | INP | < 200ms |
-| 7 | Overall | ≥ 90 (desktop) |
+| Phase | Metric | Target | Measured (desktop, production) |
+|---|---|---|---|
+| 2 | LCP | < 2.5s | ✅ 1.0s |
+| 2 | CLS | < 0.1 | ✅ 0 |
+| 4 | INP | < 200ms | ✅ TBT 0ms (lab proxy) — field data via Speed Insights |
+| 7 | Overall | ≥ 90 (desktop) | ✅ 97 |
 
-> Local Lighthouse scores will not reflect Phase 2 optimisations. Run measurements on the Vercel deployment after Phase 7.
+Full methodology, mobile-throttled numbers, and the `fetchPriority` fix that closed most of the mobile LCP gap: see [`docs/perf-baseline.md`](docs/perf-baseline.md).
 
 ---
 
