@@ -1,0 +1,39 @@
+{
+  "nav": {
+    "myList": "마이 리스트",
+    "signIn": "로그인",
+    "search": "검색",
+    "searchFilms": "영화 검색",
+    "searchPlaceholder": "영화 제목을 검색하세요..."
+  },
+  "film": {
+    "trending": "이번 주 트렌딩",
+    "cast": "출연진",
+    "watched": "✓ 시청 완료",
+    "addToWatched": "+ 시청 목록에 추가",
+    "markWatched": "시청 완료로 표시",
+    "unmarkWatched": "시청 취소",
+    "ratingLabel": "별점 {rating}점",
+    "starLabel": "{star}점",
+    "viewDetails": "자세히 보기 →",
+    "clickToExpand": "클릭해서 자세히 보기 ↗",
+    "noPoster": "포스터 없음"
+  },
+  "search": {
+    "heading": "영화 검색",
+    "resultsFor": "“{query}” 검색 결과",
+    "promptEmpty": "검색어를 입력하면 영화 결과가 표시됩니다.",
+    "noResults": "“{query}”에 대한 검색 결과가 없습니다.",
+    "resultsCount": "{count}개 결과"
+  },
+  "profile": {
+    "title": "내 시청 목록",
+    "metaTitle": "마이 리스트 — CineLog",
+    "empty": "아직 시청한 영화가 없습니다. 영화를 찾아 목록에 추가해보세요."
+  },
+  "metadata": {
+    "title": "CineLog",
+    "description": "영화를 기록하고, 평가하고, 발견하세요",
+    "searchTitle": "검색 — CineLog"
+  }
+}
