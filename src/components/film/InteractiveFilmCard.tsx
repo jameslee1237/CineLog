@@ -2,6 +2,7 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
 import { FALLBACK_BLUR } from '@/lib/blur';
@@ -29,12 +30,16 @@ export const InteractiveFilmCard = ({
   const hasDraggedRef = useRef(false);
 
   // 마우스 정규화 좌표 → 3D 틸트 + 광택 이동
+  // Rules of Hooks: priority 분기와 무관하게 항상 호출해야 함. useSpring이
+  // useInsertionEffect에서 attachFollow로 구독을 걸기 때문에, priority
+  // 카드에서도 tiltX/tiltY/glareOpacity의 spring 구독 비용은 그대로 발생한다
+  // (제거되지 않음). 아래 priority 분기에서 없애는 것은 이 값들을 소비하는
+  // JSX 트리(motion.div 마운트, layoutId, drag 리스너 등) 쪽 비용뿐이다.
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
   const tiltX = useSpring(useTransform(rawY, [-0.5, 0.5], [TILT_DEG, -TILT_DEG]), SPRING_CONFIG);
   const tiltY = useSpring(useTransform(rawX, [-0.5, 0.5], [-TILT_DEG, TILT_DEG]), SPRING_CONFIG);
 
-  // 광택 그라디언트 — 훅은 컴포넌트 최상위에서만 호출
   const glareX = useTransform(rawX, [-0.5, 0.5], [0, 100]);
   const glareY = useTransform(rawY, [-0.5, 0.5], [0, 100]);
   const glareOpacity = useSpring(0, { stiffness: 200, damping: 20 });
@@ -70,6 +75,52 @@ export const InteractiveFilmCard = ({
     if (hasDraggedRef.current) return;
     router.push(`/films/${movie.id}`);
   }, [router, movie.id]);
+
+  const posterImage = posterUrl ? (
+    <Image
+      src={posterUrl}
+      alt={movie.title}
+      fill
+      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+      className="object-cover"
+      priority={priority}
+      // Next.js 16: priority는 preload+eager만 제어하며 fetchPriority는 별도 opt-in
+      fetchPriority={priority ? 'high' : undefined}
+      placeholder="blur"
+      blurDataURL={blurDataURL}
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
+      No poster
+    </div>
+  );
+
+  // above-the-fold(priority) 카드는 틸트/광택/드래그 트리를 렌더하지 않음 —
+  // 이 카드들이 LCP 후보이므로, motion.div 마운트·layoutId reconciliation·
+  // drag 리스너·glare/hover-hint 렌더 등 JSX 트리 비용을 제거해 mobile LCP를
+  // 단축한다. 단, 위에서 만든 useSpring 구독(useInsertionEffect 기반
+  // attachFollow) 자체는 Rules of Hooks 때문에 이 분기와 무관하게 항상
+  // 실행되므로 제거되지 않는다 — 이는 알고 있는 부분 최적화이며, 완전히
+  // 없애려면 parent grid가 두 개의 분리된 컴포넌트 중 하나를 선택하도록
+  // 구조를 나누어야 한다 (현재 범위 밖). 클릭 시 동작(상세 페이지 이동)은
+  // 동일하게 유지하되 드래그가 없으므로 plain Link로 충분.
+  if (priority) {
+    return (
+      <div>
+        <Link
+          href={`/films/${movie.id}`}
+          className="relative block aspect-[2/3] w-full rounded-xl overflow-hidden bg-gray-800 shadow-lg"
+          style={{ viewTransitionName: `poster-${movie.id}` }}
+        >
+          {posterImage}
+        </Link>
+        <div className="mt-2 space-y-0.5">
+          <p className="text-sm font-medium leading-tight line-clamp-2">{movie.title}</p>
+          <p className="text-xs text-gray-400">{movie.release_date?.slice(0, 4)}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -108,24 +159,7 @@ export const InteractiveFilmCard = ({
       >
         {/* 포스터 이미지 */}
         <motion.div layoutId={`poster-img-${movie.id}`} className="absolute inset-0">
-          {posterUrl ? (
-            <Image
-              src={posterUrl}
-              alt={movie.title}
-              fill
-              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-              className="object-cover"
-              priority={priority}
-              // Next.js 16: priority는 preload+eager만 제어하며 fetchPriority는 별도 opt-in
-              fetchPriority={priority ? 'high' : undefined}
-              placeholder="blur"
-              blurDataURL={blurDataURL}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
-              No poster
-            </div>
-          )}
+          {posterImage}
         </motion.div>
 
         {/* 광택 하이라이트 */}
