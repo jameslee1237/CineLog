@@ -1,11 +1,16 @@
 import { ClerkProvider } from '@clerk/nextjs';
+import { koKR } from '@clerk/localizations';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { hasLocale, NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { WebVitals } from '@/components/ui/WebVitals';
 import { Navbar } from '@/components/ui/Navbar';
-import './globals.css';
+import { routing } from '@/i18n/routing';
+import '../globals.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -22,15 +27,25 @@ export const metadata: Metadata = {
   description: 'Track, rate, and discover films',
 };
 
-interface IRootLayoutProps {
-  children: ReactNode;
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
 }
 
-export default function RootLayout({ children }: Readonly<IRootLayoutProps>) {
+interface IRootLayoutProps {
+  children: ReactNode;
+  params: Promise<{ locale: string }>;
+}
+
+export default async function RootLayout({ children, params }: Readonly<IRootLayoutProps>) {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) notFound();
+
+  const messages = await getMessages();
+
   return (
-    <ClerkProvider>
+    <ClerkProvider localization={locale === 'kr' ? koKR : undefined}>
       <html
-        lang="en"
+        lang={locale}
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
         <head>
@@ -38,8 +53,10 @@ export default function RootLayout({ children }: Readonly<IRootLayoutProps>) {
           <link rel="preconnect" href="https://image.tmdb.org" />
         </head>
         <body className="min-h-full flex flex-col">
-          <Navbar />
-          <div className="flex-1">{children}</div>
+          <NextIntlClientProvider messages={messages}>
+            <Navbar />
+            <div className="flex-1">{children}</div>
+          </NextIntlClientProvider>
           <WebVitals />
           {/* Vercel Speed Insights — 실제 방문자의 LCP/CLS/INP 실측치 수집 (Lighthouse는 lab 데이터만 제공) */}
           <SpeedInsights />
