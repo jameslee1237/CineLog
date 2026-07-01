@@ -1,4 +1,5 @@
 import { ClerkProvider } from '@clerk/nextjs';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Geist, Geist_Mono } from 'next/font/google';
@@ -40,6 +41,8 @@ export default function RootLayout({ children }: Readonly<IRootLayoutProps>) {
           <Navbar />
           <div className="flex-1">{children}</div>
           <WebVitals />
+          {/* Vercel Speed Insights — 실제 방문자의 LCP/CLS/INP 실측치 수집 (Lighthouse는 lab 데이터만 제공) */}
+          <SpeedInsights />
         </body>
       </html>
     </ClerkProvider>
