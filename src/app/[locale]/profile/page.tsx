@@ -2,8 +2,8 @@ import { getWatchedFilmsWithRatings } from '@/lib/db/queries';
 import { getCurrentTmdbLanguage, getMovieDetail } from '@/lib/tmdb';
 import { FilmCard } from '@/components/film/FilmCard';
 import { auth } from '@clerk/nextjs/server';
-import { getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { redirect } from '@/i18n/navigation';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
@@ -14,7 +14,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ProfilePage() {
   const { userId } = await auth();
-  if (!userId) redirect('/sign-in');
+  if (!userId) {
+    const locale = await getLocale();
+    return redirect({ href: '/sign-in', locale });
+  }
   const t = await getTranslations('profile');
 
   return (
