@@ -109,31 +109,45 @@ Open [http://localhost:3000](http://localhost:3000).
 ```
 src/
   app/
-    (browse)/page.tsx          # Trending grid — RSC + Suspense streamed
-    films/[id]/page.tsx        # Film detail — parallel fetch, skeleton fallback
-    films/[id]/actions.ts      # Server Actions — toggleWatched, setRating
-    profile/page.tsx           # User collection — watched list with ratings
-    sign-in/[[...sign-in]]/    # Clerk sign-in page
-    sign-up/[[...sign-up]]/    # Clerk sign-up page
-    layout.tsx                 # Root layout — Clerk, Navbar, preconnect, WebVitals
+    [locale]/
+      layout.tsx                  # Root layout — Clerk, Navbar, next-intl provider, preconnect, WebVitals
+      (browse)/
+        page.tsx                  # Trending grid — RSC + Suspense streamed
+        @modal/                   # Parallel route slot — film detail intercepting modal
+      films/[id]/
+        page.tsx                  # Film detail — parallel fetch, skeleton fallback
+        actions.ts                # Server Actions — toggleWatched, setRating
+      profile/page.tsx            # User collection — watched list with ratings
+      search/page.tsx             # Search results page
+      sign-in/[[...sign-in]]/     # Clerk sign-in page
+      sign-up/[[...sign-up]]/     # Clerk sign-up page
   components/
     film/
-      FilmCard.tsx             # Card + blur placeholder + watched badge
-      FilmGrid.tsx             # Async RSC grid, parallel blur generation
-      FilmGridSkeleton.tsx     # CLS-safe loading fallback
-      WatchedButton.tsx        # useOptimistic watched toggle (client)
-      RatingWidget.tsx         # useOptimistic star rating 1-5 (client)
+      FilmCard.tsx                # Card + blur placeholder + watched badge
+      FilmGrid.tsx                # Async RSC grid, parallel blur generation
+      FilmGridSkeleton.tsx        # CLS-safe loading fallback
+      WatchedButton.tsx           # useOptimistic watched toggle (client)
+      RatingWidget.tsx            # useOptimistic star rating 1-5 (client)
     ui/
-      Navbar.tsx               # Sticky header — Clerk UserButton + nav links
-      WebVitals.tsx            # Client component — logs LCP/CLS/INP in dev
+      Navbar.tsx                  # Sticky header — Clerk UserButton + nav links + LocaleSwitcher
+      LocaleSwitcher.tsx          # EN/KR toggle (client)
+      WebVitals.tsx               # Client component — logs LCP/CLS/INP in dev
+  i18n/
+    locales.ts                    # Locale constants — isValidLocale, getNextLocale
+    routing.ts                    # next-intl routing config (locales, localePrefix)
+    navigation.ts                 # Locale-aware Link/useRouter/usePathname wrappers
+    request.ts                    # next-intl request config — resolves locale + loads messages
   lib/
-    tmdb.ts                    # Type-safe TMDB fetch client (ITmdb* interfaces)
-    blur.ts                    # Server-side blur placeholder generator
+    tmdb.ts                       # Type-safe TMDB fetch client (ITmdb* interfaces, getCurrentTmdbLanguage)
+    blur.ts                       # Server-side blur placeholder generator
     db/
-      schema.ts                # Drizzle schema: watched_films + ratings
-      index.ts                 # Neon connection
-      queries.ts               # DB query helpers — getWatchedStatus, getRating, etc.
-  middleware.ts                # Clerk middleware — route protection
+      schema.ts                   # Drizzle schema: watched_films + ratings
+      index.ts                    # Neon connection
+      queries.ts                  # DB query helpers — getWatchedStatus, getRating, etc.
+  proxy.ts                        # Clerk + next-intl middleware — route protection + locale routing
+messages/
+  en.json                         # English message catalog
+  kr.json                         # Korean message catalog
 ```
 
 ---
