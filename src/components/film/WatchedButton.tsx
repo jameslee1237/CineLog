@@ -1,6 +1,7 @@
 'use client';
 
-import { toggleWatched } from '@/app/films/[id]/actions';
+import { toggleWatched } from '@/app/[locale]/films/[id]/actions';
+import { useTranslations } from 'next-intl';
 import { useOptimistic, useTransition } from 'react';
 
 interface IWatchedButtonProps {
@@ -11,6 +12,7 @@ interface IWatchedButtonProps {
 export const WatchedButton = ({ tmdbId, initialWatched }: IWatchedButtonProps) => {
   const [optimisticWatched, setOptimisticWatched] = useOptimistic(initialWatched);
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations('film');
 
   const handleClick = () => {
     startTransition(async () => {
@@ -23,7 +25,7 @@ export const WatchedButton = ({ tmdbId, initialWatched }: IWatchedButtonProps) =
     <button
       onClick={handleClick}
       disabled={isPending}
-      aria-label={optimisticWatched ? '시청 취소' : '시청 완료로 표시'}
+      aria-label={optimisticWatched ? t('unmarkWatched') : t('markWatched')}
       className={[
         'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors',
         optimisticWatched
@@ -34,7 +36,7 @@ export const WatchedButton = ({ tmdbId, initialWatched }: IWatchedButtonProps) =
         .filter(Boolean)
         .join(' ')}
     >
-      {optimisticWatched ? '✓ 시청 완료' : '+ 시청 목록에 추가'}
+      {optimisticWatched ? t('watched') : t('addToWatched')}
     </button>
   );
 };

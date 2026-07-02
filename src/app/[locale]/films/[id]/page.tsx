@@ -1,5 +1,7 @@
 import {
+  LOCALE_TO_TMDB_LANGUAGE,
   getBackdropUrl,
+  getCurrentTmdbLanguage,
   getMovieCredits,
   getMovieDetail,
   getPosterUrl,
@@ -11,17 +13,19 @@ import { WatchedButton } from '@/components/film/WatchedButton';
 import { RatingWidget } from '@/components/film/RatingWidget';
 import { MotionDiv } from '@/components/ui/MotionDiv';
 import { auth } from '@clerk/nextjs/server';
+import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
 import Image from 'next/image';
 import type { Metadata } from 'next';
+import type { TLocale } from '@/i18n/locales';
 
 interface IFilmPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: TLocale; id: string }>;
 }
 
 export async function generateMetadata({ params }: IFilmPageProps): Promise<Metadata> {
-  const { id } = await params;
-  const movie = await getMovieDetail(Number(id));
+  const { locale, id } = await params;
+  const movie = await getMovieDetail(Number(id), LOCALE_TO_TMDB_LANGUAGE[locale]);
   return {
     title: `${movie.title} — CineLog`,
     description: movie.overview,
@@ -45,10 +49,12 @@ export default async function FilmPage({ params }: IFilmPageProps) {
 // 실제 데이터 fetch를 별도 async 컴포넌트로 분리 — Suspense boundary가 이 경계를 기준으로 동작
 async function FilmDetail({ movieId }: { movieId: number }) {
   const { userId } = await auth();
+  const language = await getCurrentTmdbLanguage();
+  const t = await getTranslations('film');
 
   // TMDB 데이터 병렬 fetch
   const [movie, credits] = await Promise.all([
-    getMovieDetail(movieId),
+    getMovieDetail(movieId, language),
     getMovieCredits(movieId),
   ]);
 
@@ -135,7 +141,7 @@ async function FilmDetail({ movieId }: { movieId: number }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1], delay: 0.35 }}
         >
-          <CastSection cast={topCast} />
+          <CastSection cast={topCast} heading={t('cast')} />
         </MotionDiv>
       </div>
     </>
@@ -168,11 +174,12 @@ const FilmMeta = ({ movie }: IFilmMetaProps) => (
 
 interface ICastSectionProps {
   cast: ITmdbCastMember[];
+  heading: string;
 }
 
-const CastSection = ({ cast }: ICastSectionProps) => (
+const CastSection = ({ cast, heading }: ICastSectionProps) => (
   <section className="mt-8">
-    <h2 className="text-xl font-semibold mb-4">Cast</h2>
+    <h2 className="text-xl font-semibold mb-4">{heading}</h2>
     <div className="flex gap-3 overflow-x-auto pb-2">
       {cast.map((member) => (
         <div key={member.id} className="shrink-0 w-20 text-center">

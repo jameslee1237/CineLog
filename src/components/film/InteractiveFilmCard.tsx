@@ -1,12 +1,12 @@
 'use client';
 
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FALLBACK_BLUR } from '@/lib/blur';
 import { getPosterUrl, type ITmdbMovie } from '@/lib/tmdb';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useTilt } from './TiltProvider';
 
 interface IInteractiveFilmCardProps {
@@ -23,6 +23,7 @@ export const InteractiveFilmCard = ({
   blurDataURL = FALLBACK_BLUR,
   priority = false,
 }: IInteractiveFilmCardProps) => {
+  const t = useTranslations('film');
   const router = useRouter();
   const posterUrl = getPosterUrl(movie.poster_path, 'w342');
   const [isHovered, setIsHovered] = useState(false);
@@ -121,7 +122,7 @@ export const InteractiveFilmCard = ({
     />
   ) : (
     <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
-      No poster
+      {t('noPoster')}
     </div>
   );
 
@@ -240,7 +241,7 @@ export const InteractiveFilmCard = ({
             animate={{ opacity: 1 }}
             className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent flex items-end p-2 pointer-events-none"
           >
-            <span className="text-xs text-white/80">Click to expand ↗</span>
+            <span className="text-xs text-white/80">{t('clickToExpand')}</span>
           </motion.div>
         )}
       </motion.div>

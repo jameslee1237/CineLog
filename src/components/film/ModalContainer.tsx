@@ -3,7 +3,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { getPathname } from '@/i18n/navigation';
 import { FALLBACK_BLUR } from '@/lib/blur';
 
 interface IModalContainerProps {
@@ -31,6 +33,8 @@ export const ModalContainer = ({
   // exit 애니메이션을 위해 로컬 visible 상태 관리
   // 브라우저 Back 버튼은 즉시 언마운트되므로 Escape/백드롭 클릭에서만 애니메이션 실행
   const [isVisible, setIsVisible] = useState(true);
+  const locale = useLocale();
+  const t = useTranslations('film');
 
   const close = () => {
     setIsVisible(false);
@@ -120,10 +124,10 @@ export const ModalContainer = ({
                 {/* <Link> 는 소프트 네비게이션이라 인터셉트 라우트에 다시 잡힘.
                     <a> 로 하드 네비게이션해야 실제 /films/[id] 페이지로 이동 */}
                 <a
-                  href={`/films/${movieId}`}
+                  href={getPathname({ href: `/films/${movieId}`, locale })}
                   className="block w-full text-center py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors"
                 >
-                  View details →
+                  {t('viewDetails')}
                 </a>
               </div>
             </motion.div>

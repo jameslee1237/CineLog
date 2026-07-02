@@ -1,6 +1,7 @@
 'use client';
 
-import { setRating } from '@/app/films/[id]/actions';
+import { setRating } from '@/app/[locale]/films/[id]/actions';
+import { useTranslations } from 'next-intl';
 import { useOptimistic, useTransition } from 'react';
 
 interface IRatingWidgetProps {
@@ -13,6 +14,7 @@ const MAX_STARS = 5;
 export const RatingWidget = ({ tmdbId, initialRating }: IRatingWidgetProps) => {
   const [optimisticRating, setOptimisticRating] = useOptimistic(initialRating ?? 0);
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations('film');
 
   const handleRate = (score: number) => {
     // 같은 별점 클릭 시 별점 삭제(0으로)
@@ -24,7 +26,7 @@ export const RatingWidget = ({ tmdbId, initialRating }: IRatingWidgetProps) => {
   };
 
   return (
-    <div className="flex items-center gap-1" aria-label={`별점 ${optimisticRating}점`}>
+    <div className="flex items-center gap-1" aria-label={t('ratingLabel', { rating: optimisticRating })}>
       {Array.from({ length: MAX_STARS }, (_, index) => {
         const starValue = index + 1;
         const isFilled = starValue <= optimisticRating;
@@ -33,7 +35,7 @@ export const RatingWidget = ({ tmdbId, initialRating }: IRatingWidgetProps) => {
             key={starValue}
             onClick={() => handleRate(starValue)}
             disabled={isPending}
-            aria-label={`${starValue}점`}
+            aria-label={t('starLabel', { star: starValue })}
             className={[
               'text-2xl transition-colors leading-none',
               isFilled ? 'text-amber-400' : 'text-gray-600 hover:text-amber-300',

@@ -1,3 +1,6 @@
+import { getLocale } from 'next-intl/server';
+import type { TLocale } from '@/i18n/locales';
+
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
 
@@ -8,6 +11,22 @@ const getHeaders = () => ({
   Authorization: `Bearer ${process.env.TMDB_API_READ_ACCESS_TOKEN}`,
   'Content-Type': 'application/json',
 });
+
+export type TTmdbLanguage = 'en-US' | 'ko-KR';
+
+// URL 로케일 슬러그(en/kr)와 TMDB의 표준 language 코드(en-US/ko-KR)를 잇는 유일한 지점
+export const LOCALE_TO_TMDB_LANGUAGE: Record<TLocale, TTmdbLanguage> = {
+  en: 'en-US',
+  kr: 'ko-KR',
+};
+
+// src/app/[locale]/layout.tsx가 hasLocale(routing.locales, locale) ? ... : notFound()로
+// 유효하지 않은 로케일을 이미 걸러내므로, 이 함수를 호출하는 모든 Server Component가 렌더링될
+// 시점에는 getLocale()이 앱에 설정된 로케일만 반환함이 보장됨 — 따라서 as TLocale 캐스팅이 안전함
+export async function getCurrentTmdbLanguage(): Promise<TTmdbLanguage> {
+  const locale = (await getLocale()) as TLocale;
+  return LOCALE_TO_TMDB_LANGUAGE[locale];
+}
 
 export interface ITmdbMovie {
   id: number;
@@ -61,8 +80,8 @@ export const getBackdropUrl = (backdropPath: string | null, size: TBackdropSize 
   return `${TMDB_IMAGE_BASE}/${size}${backdropPath}`;
 };
 
-export async function getTrending(): Promise<ITmdbMovie[]> {
-  const res = await fetch(`${TMDB_BASE}/trending/movie/week`, {
+export async function getTrending(language: TTmdbLanguage): Promise<ITmdbMovie[]> {
+  const res = await fetch(`${TMDB_BASE}/trending/movie/week?language=${language}`, {
     headers: getHeaders(),
     ...CACHE_1H,
   });
@@ -71,8 +90,8 @@ export async function getTrending(): Promise<ITmdbMovie[]> {
   return data.results as ITmdbMovie[];
 }
 
-export async function getNowPlaying(): Promise<ITmdbMovie[]> {
-  const res = await fetch(`${TMDB_BASE}/movie/now_playing`, {
+export async function getNowPlaying(language: TTmdbLanguage): Promise<ITmdbMovie[]> {
+  const res = await fetch(`${TMDB_BASE}/movie/now_playing?language=${language}`, {
     headers: getHeaders(),
     ...CACHE_1H,
   });
@@ -81,8 +100,8 @@ export async function getNowPlaying(): Promise<ITmdbMovie[]> {
   return data.results as ITmdbMovie[];
 }
 
-export async function getMovieDetail(id: number): Promise<ITmdbMovieDetail> {
-  const res = await fetch(`${TMDB_BASE}/movie/${id}`, {
+export async function getMovieDetail(id: number, language: TTmdbLanguage): Promise<ITmdbMovieDetail> {
+  const res = await fetch(`${TMDB_BASE}/movie/${id}?language=${language}`, {
     headers: getHeaders(),
     ...CACHE_1H,
   });
@@ -91,6 +110,7 @@ export async function getMovieDetail(id: number): Promise<ITmdbMovieDetail> {
 }
 
 export async function getMovieCredits(id: number): Promise<ITmdbCredits> {
+  // 캐스트/크루 이름은 로케일에 따라 달라지지 않으므로 language 파라미터 없음
   const res = await fetch(`${TMDB_BASE}/movie/${id}/credits`, {
     headers: getHeaders(),
     ...CACHE_1H,
@@ -99,9 +119,13 @@ export async function getMovieCredits(id: number): Promise<ITmdbCredits> {
   return res.json() as Promise<ITmdbCredits>;
 }
 
-export async function searchMovies(query: string, page = 1): Promise<ITmdbSearchResult> {
+export async function searchMovies(
+  query: string,
+  language: TTmdbLanguage,
+  page = 1,
+): Promise<ITmdbSearchResult> {
   const res = await fetch(
-    `${TMDB_BASE}/search/movie?query=${encodeURIComponent(query)}&page=${page}`,
+    `${TMDB_BASE}/search/movie?query=${encodeURIComponent(query)}&language=${language}&page=${page}`,
     { headers: getHeaders() },
   );
   if (!res.ok) throw new Error('Failed to search movies');

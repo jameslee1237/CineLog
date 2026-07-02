@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "myList": "My List",
+    "signIn": "Sign In",
+    "search": "Search",
+    "searchFilms": "Search films",
+    "searchPlaceholder": "Search films..."
+  },
+  "localeSwitcher": {
+    "switchToKorean": "Switch to Korean",
+    "switchToEnglish": "Switch to English"
+  },
+  "film": {
+    "trending": "Trending This Week",
+    "cast": "Cast",
+    "watched": "✓ Watched",
+    "addToWatched": "+ Add to Watched List",
+    "markWatched": "Mark as watched",
+    "unmarkWatched": "Unmark as watched",
+    "ratingLabel": "Rating: {rating} stars",
+    "starLabel": "{star} stars",
+    "viewDetails": "View details →",
+    "clickToExpand": "Click to expand ↗",
+    "noPoster": "No poster"
+  },
+  "search": {
+    "heading": "Search Films",
+    "resultsFor": "Results for “{query}”",
+    "promptEmpty": "Type to search for films.",
+    "noResults": "No results for “{query}”.",
+    "resultsCount": "{count} results"
+  },
+  "profile": {
+    "title": "My Watched List",
+    "metaTitle": "My List — CineLog",
+    "empty": "No films watched yet. Find a film and add it to your list."
+  },
+  "metadata": {
+    "title": "CineLog",
+    "description": "Track, rate, and discover films",
+    "searchTitle": "Search — CineLog"
+  }
+}

@@ -1,34 +1,29 @@
-import { searchMovies } from '@/lib/tmdb';
+import { getCurrentTmdbLanguage, searchMovies } from '@/lib/tmdb';
 import { FilmCard } from '@/components/film/FilmCard';
 import { FALLBACK_BLUR } from '@/lib/blur';
+import { getTranslations } from 'next-intl/server';
 
 interface ISearchResultsProps {
   query: string;
 }
 
 export const SearchResults = async ({ query }: ISearchResultsProps) => {
+  const t = await getTranslations('search');
+
   if (!query.trim()) {
-    return (
-      <p className="mt-8 text-center text-gray-500">
-        검색어를 입력하면 영화 결과가 표시됩니다.
-      </p>
-    );
+    return <p className="mt-8 text-center text-gray-500">{t('promptEmpty')}</p>;
   }
 
-  const data = await searchMovies(query);
+  const data = await searchMovies(query, await getCurrentTmdbLanguage());
 
   if (data.results.length === 0) {
-    return (
-      <p className="mt-8 text-center text-gray-500">
-        &ldquo;{query}&rdquo;에 대한 검색 결과가 없습니다.
-      </p>
-    );
+    return <p className="mt-8 text-center text-gray-500">{t('noResults', { query })}</p>;
   }
 
   return (
     <>
       <p className="mb-4 text-sm text-gray-400">
-        {data.total_results.toLocaleString()}개 결과
+        {t('resultsCount', { count: data.total_results })}
       </p>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {data.results.map((movie) => (

@@ -1,7 +1,8 @@
 import { getPosterUrl, type ITmdbMovie } from '@/lib/tmdb';
 import { FALLBACK_BLUR } from '@/lib/blur';
+import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 
 interface IFilmCardProps {
   movie: ITmdbMovie;
@@ -10,7 +11,8 @@ interface IFilmCardProps {
   isWatched?: boolean;
 }
 
-export const FilmCard = ({ movie, priority = false, blurDataURL = FALLBACK_BLUR, isWatched = false }: IFilmCardProps) => {
+export const FilmCard = async ({ movie, priority = false, blurDataURL = FALLBACK_BLUR, isWatched = false }: IFilmCardProps) => {
+  const t = await getTranslations('film');
   const posterUrl = getPosterUrl(movie.poster_path, 'w342');
 
   return (
@@ -46,7 +48,7 @@ export const FilmCard = ({ movie, priority = false, blurDataURL = FALLBACK_BLUR,
           />
         ) : (
           <div className="flex h-full items-center justify-center text-gray-500 text-sm">
-            No poster
+            {t('noPoster')}
           </div>
         )}
       </div>
