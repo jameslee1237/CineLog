@@ -1,22 +1,25 @@
 import { getWatchedFilmsWithRatings } from '@/lib/db/queries';
-import { getMovieDetail } from '@/lib/tmdb';
+import { getCurrentTmdbLanguage, getMovieDetail } from '@/lib/tmdb';
 import { FilmCard } from '@/components/film/FilmCard';
 import { auth } from '@clerk/nextjs/server';
+import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'My List — CineLog',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('profile');
+  return { title: t('metaTitle') };
+}
 
 export default async function ProfilePage() {
   const { userId } = await auth();
   if (!userId) redirect('/sign-in');
+  const t = await getTranslations('profile');
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">My Watched List</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('title')}</h1>
       <Suspense fallback={<WatchedListSkeleton />}>
         <WatchedList userId={userId} />
       </Suspense>
@@ -26,18 +29,17 @@ export default async function ProfilePage() {
 
 async function WatchedList({ userId }: { userId: string }) {
   const entries = await getWatchedFilmsWithRatings(userId);
+  const t = await getTranslations('profile');
 
   if (entries.length === 0) {
-    return (
-      <p className="text-gray-400 text-sm">
-        No films watched yet. Find a film and add it to your list.
-      </p>
-    );
+    return <p className="text-gray-400 text-sm">{t('empty')}</p>;
   }
+
+  const language = await getCurrentTmdbLanguage();
 
   // TMDB 상세 정보 병렬 fetch (최대 50개)
   const movies = await Promise.all(
-    entries.map((entry) => getMovieDetail(entry.tmdbId)),
+    entries.map((entry) => getMovieDetail(entry.tmdbId, language)),
   );
 
   return (
